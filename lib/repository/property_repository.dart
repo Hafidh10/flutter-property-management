@@ -20,7 +20,7 @@ class PropertyRepository {
 
   Future<void> updateProperty(Property property) async {
     // update property to the database
-    // await _apiService.addProperty(property);
+    await _apiService.updateProperty(property);
   }
 
   Future<void> deleteProperty(int propertyId) async {

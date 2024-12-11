@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../../bloc/property_bloc.dart';
 import '../../models/propertiesModel.dart';
 
@@ -31,56 +32,78 @@ class HomeScreen extends StatelessWidget {
               itemCount: state.properties.length,
               itemBuilder: (context, index) {
                 final property = state.properties[index];
-                return ListTile(
-                  title: Text(property.title),
-                  subtitle: Text(property.address),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Column(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          // Navigate to the edit property screen
-                          Navigator.pushNamed(context, '/edit_property',
-                              arguments: property);
-                        },
+                      ListTile(
+                        title: Text(property.title),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(property.address),
+                            Text(
+                              NumberFormat.currency(symbol: '\$')
+                                  .format(property.price),
+                              style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight:
+                                      FontWeight.bold), // Set the color to red
+                            ), // Display price
+                            Text('Bedrooms: ${property.bedrooms.toString()}'),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                // Navigate to the edit property screen
+                                Navigator.pushNamed(context, '/edit_property',
+                                    arguments: property);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                // Show confirmation dialog before deleting
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Delete Property'),
+                                      content: Text(
+                                          'Are you sure you want to delete this property?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); // Close the dialog
+                                          },
+                                          child: Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            // Dispatch the delete event
+                                            context
+                                                .read<PropertyBloc>()
+                                                .add(DeleteProperty(property));
+                                            Navigator.of(context)
+                                                .pop(); // Close the dialog
+                                          },
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // Show confirmation dialog before deleting
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text('Delete Property'),
-                                content: Text(
-                                    'Are you sure you want to delete this property?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                    },
-                                    child: Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // Dispatch the delete event
-                                      context
-                                          .read<PropertyBloc>()
-                                          .add(DeleteProperty(property));
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                    },
-                                    child: Text('Delete'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
+                      const Divider(thickness: 1),
                     ],
                   ),
                 );

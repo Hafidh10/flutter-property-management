@@ -35,6 +35,8 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     on<UpdateProperty>((event, emit) async {
       try {
         await _propertyRepository.updateProperty(event.property);
+        emit(PropertyAdded()); // Emit success state
+
         // Fetch properties again after updating
         final properties = await _propertyRepository.getProperties();
         emit(PropertiesLoaded(properties)); // Emit the updated properties
@@ -42,7 +44,6 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         emit(PropertyError(message: e.toString()));
       }
     });
-
     on<DeleteProperty>((event, emit) async {
       try {
         await _propertyRepository.deleteProperty(event.property.id);
