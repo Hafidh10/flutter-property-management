@@ -60,144 +60,101 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Title',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a title';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20), // Add spacing between fields
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an address';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20), // Add spacing between fields
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a description';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20), // Add spacing between fields
-                  TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: 'Price',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a price';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                  ),
-                  SizedBox(height: 20), // Add spacing between fields
-                  TextFormField(
-                    controller: _bedroomsController,
-                    decoration: InputDecoration(
-                      labelText: 'Bedrooms',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the number of bedrooms';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                  ),
+                  _buildTextField(
+                      _titleController, 'Title', 'Please enter a title'),
+                  SizedBox(height: 20),
+                  _buildTextField(
+                      _addressController, 'Address', 'Please enter an address'),
+                  SizedBox(height: 20),
+                  _buildTextField(_descriptionController, 'Description',
+                      'Please enter a description'),
+                  SizedBox(height: 20),
+                  _buildTextField(
+                      _priceController, 'Price', 'Please enter a price',
+                      isNumeric: true),
+                  SizedBox(height: 20),
+                  _buildTextField(_bedroomsController, 'Bedrooms',
+                      'Please enter the number of bedrooms',
+                      isNumeric: true),
                   SizedBox(height: 40),
-                  Container(
-                    height: 60,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading
-                          ? null // Disable button while loading
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                setState(() {
-                                  isLoading = true; // Start loading
-                                });
-
-                                final property = Property(
-                                  id: 0, // This will be auto-generated by the backend
-                                  title: _titleController.text,
-                                  address: _addressController.text,
-                                  description: _descriptionController.text,
-                                  price: double.parse(_priceController.text),
-                                  bedrooms: int.parse(_bedroomsController.text),
-                                );
-
-                                context
-                                    .read<PropertyBloc>()
-                                    .add(AddProperty(property));
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size(
-                            double.infinity, 56), // Full width and height of 56
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(12.0), // Rounded corners
-                        ),
-                      ),
-                      child: isLoading
-                          ? SizedBox(
-                              height:
-                                  20, // Set height for the circular indicator
-                              width: 20, // Set width for the circular indicator
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2, // Adjust stroke width for size
-                              ),
-                            )
-                          : const Text(
-                              'Add Property',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 18),
-                            ),
-                    ),
-                  ),
+                  _buildSubmitButton(),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Method to build text fields
+  Widget _buildTextField(
+      TextEditingController controller, String label, String errorMessage,
+      {bool isNumeric = false}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return errorMessage;
+        }
+        return null;
+      },
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+    );
+  }
+
+  // Method to build the submit button
+  Widget _buildSubmitButton() {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: isLoading
+            ? null // Disable button while loading
+            : () {
+                if (_formKey.currentState!.validate()) {
+                  setState(() {
+                    isLoading = true; // Start loading
+                  });
+
+                  final property = Property(
+                    id: 0, // This will be auto-generated by the backend
+                    title: _titleController.text,
+                    address: _addressController.text,
+                    description: _descriptionController.text,
+                    price: double.parse(_priceController.text),
+                    bedrooms: int.parse(_bedroomsController.text),
+                  );
+
+                  context.read<PropertyBloc>().add(AddProperty(property));
+                }
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          minimumSize:
+              const Size(double.infinity, 56), // Full width and height of 56
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0), // Rounded corners
+          ),
+        ),
+        child: isLoading
+            ? SizedBox(
+                height: 20, // Set height for the circular indicator
+                width: 20, // Set width for the circular indicator
+                child: CircularProgressIndicator(
+                  strokeWidth: 2, // Adjust stroke width for size
+                ),
+              )
+            : const Text(
+                'Add Property',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
       ),
     );
   }
