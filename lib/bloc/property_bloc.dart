@@ -1,64 +1,54 @@
-// lib/bloc/property_bloc.dart
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../repository/property_repository.dart';
-import 'property_event.dart';
-import 'property_state.dart';
+import 'package:bloc/bloc.dart';
 
-/// PropertyBloc manages the state of properties using the Flutter Bloc pattern.
-/// It handles events such as fetching, adding, updating, and deleting properties.
+import '../../models/propertiesModel.dart';
+import '../../repository/property_repository.dart';
+
+part 'property_event.dart';
+part 'property_state.dart';
+
 class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
-  /// The ApiService instance used to interact with the backend.
-  final ApiService apiService;
+  final PropertyRepository _propertyRepository;
 
-  /// Constructor for PropertyBloc.
-  /// Initializes the state to PropertyInitial.
-  PropertyBloc(this.apiService) : super(PropertyInitial()) {
-    /// Handles the FetchProperties event.
-    /// Fetches properties from the API and updates the state.
+  PropertyBloc(this._propertyRepository) : super(PropertyInitial()) {
     on<FetchProperties>((event, emit) async {
-      emit(PropertyLoading()); // Emit loading state
       try {
-        final properties =
-            await apiService.fetchProperties(); // Fetch properties from API
-        emit(PropertyLoaded(properties)); // Emit loaded state with properties
+        final properties = await _propertyRepository.getProperties();
+        emit(PropertiesLoaded(properties));
       } catch (e) {
-        print('Error fetching properties: $e'); // Log the error
-        emit(PropertyError(
-            'Failed to fetch properties: $e')); // Emit error state
+        emit(PropertyError(message: e.toString()));
       }
     });
 
-    /// Handles the AddProperty event.
-    /// Adds a new property to the API and triggers a fetch of properties.
     on<AddProperty>((event, emit) async {
       try {
-        await apiService.addProperty(event.property); // Add property to API
-        add(FetchProperties()); // Trigger fetching properties again
+        await _propertyRepository.addProperty(event.property);
+        emit(PropertyAdded());
+
+        // Fetch properties again after adding
+        final properties = await _propertyRepository.getProperties();
+        emit(PropertiesLoaded(properties)); // Emit the updated properties
       } catch (e) {
-        emit(PropertyError('Failed to add property')); // Emit error state
+        emit(PropertyError(message: e.toString()));
       }
     });
 
-    /// Handles the UpdateProperty event.
-    /// Updates an existing property in the API and triggers a fetch of properties.
     on<UpdateProperty>((event, emit) async {
       try {
-        await apiService
-            .updateProperty(event.property); // Update property in API
-        add(FetchProperties()); // Trigger fetching properties again
+        await _propertyRepository.updateProperty(event.property);
+        // Fetch properties again after updating
+        final properties = await _propertyRepository.getProperties();
+        emit(PropertiesLoaded(properties)); // Emit the updated properties
       } catch (e) {
-        emit(PropertyError('Failed to update property')); // Emit error state
+        emit(PropertyError(message: e.toString()));
       }
     });
 
-    /// Handles the DeleteProperty event.
-    /// Deletes a property from the API and triggers a fetch of properties.
     on<DeleteProperty>((event, emit) async {
       try {
-        await apiService.deleteProperty(event.id); // Delete property from API
-        add(FetchProperties()); // Trigger fetching properties again
+        await _propertyRepository.deleteProperty(event.property.id);
+        emit(PropertiesLoaded(await _propertyRepository.getProperties()));
       } catch (e) {
-        emit(PropertyError('Failed to delete property')); // Emit error state
+        emit(PropertyError(message: e.toString()));
       }
     });
   }

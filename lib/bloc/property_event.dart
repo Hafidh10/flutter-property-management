@@ -1,5 +1,4 @@
-// lib/bloc/property_event.dart
-import '../models/propertiesModel.dart';
+part of 'property_bloc.dart';
 
 abstract class PropertyEvent {}
 
@@ -14,16 +13,11 @@ class AddProperty extends PropertyEvent {
 class UpdateProperty extends PropertyEvent {
   final Property property;
 
-  UpdateProperty(this.property,
-      {required int id,
-      required String title,
-      required String address,
-      required int bedrooms,
-      required double price});
+  UpdateProperty(this.property);
 }
 
 class DeleteProperty extends PropertyEvent {
-  final int id;
+  final Property property;
 
-  DeleteProperty(this.id);
+  DeleteProperty(this.property);
 }
